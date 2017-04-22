@@ -2,11 +2,11 @@ package ru.project.master.slave.datasources;
 
 import java.util.Map;
 
-import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -34,11 +34,11 @@ public class DataSourcesConfiguration {
 	@Primary
 	public DataSource masterDataSource() {
 		BasicDataSource dataSource = new BasicDataSource();
-		dataSource.setDriverClassName(props.getProperty("hibernate.master.datasource.driver-class-name"));
+		dataSource.setDriverClassName(props.getProperty("spring.datasource.master.driver-class-name"));
 		dataSource.setDefaultAutoCommit(false);
-		dataSource.setUsername(props.getProperty("hibernate.master.datasource.username"));
-		dataSource.setPassword(props.getProperty("hibernate.master.datasource.password"));
-		dataSource.setUrl(props.getProperty("hibernate.master.datasource.url"));
+		dataSource.setUsername(props.getProperty("spring.datasource.master.username"));
+		dataSource.setPassword(props.getProperty("spring.datasource.master.password"));
+		dataSource.setUrl(props.getProperty("spring.datasource.master.url"));
 		return dataSource;
 	}
 
@@ -57,11 +57,11 @@ public class DataSourcesConfiguration {
 	@Bean(name = "slaveDataSource")
 	public DataSource slaveDataSource() {
 		BasicDataSource dataSource = new BasicDataSource();
-		dataSource.setDriverClassName(props.getProperty("hibernate.slave.datasource.driver-class-name"));
+		dataSource.setDriverClassName(props.getProperty("spring.datasource.slave.driver-class-name"));
 		dataSource.setDefaultAutoCommit(false);
-		dataSource.setUsername(props.getProperty("hibernate.slave.datasource.username"));
-		dataSource.setPassword(props.getProperty("hibernate.slave.datasource.password"));
-		dataSource.setUrl(props.getProperty("hibernate.slave.datasource.url"));
+		dataSource.setUsername(props.getProperty("spring.datasource.slave.username"));
+		dataSource.setPassword(props.getProperty("spring.datasource.slave.password"));
+		dataSource.setUrl(props.getProperty("spring.datasource.slave.url"));
 		return dataSource;
 	}
 
@@ -71,17 +71,17 @@ public class DataSourcesConfiguration {
 	}
 
 	@Bean
-	public EntityManagerFactory entityManagerFactory() {
+	public LocalContainerEntityManagerFactoryBean entityManagerFactory(EntityManagerFactoryBuilder builder) {
 		HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-		vendorAdapter.setGenerateDdl(true);
-		LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
+		vendorAdapter.setGenerateDdl(Boolean.parseBoolean(props.getProperty("spring.jpa.generate-ddl")));
+		Map<String, String> additionalProperties = Maps.newHashMap();
+		additionalProperties.put("hibernate.dialect", props.getProperty("spring.jpa.dialect"));
+		LocalContainerEntityManagerFactoryBean factory = builder.dataSource(routingDataSource())
+				.packages("ru.project.master.slave.orm").persistenceUnit("routingEMF").properties(additionalProperties)
+				.build();
 		factory.setJpaVendorAdapter(vendorAdapter);
-		factory.setDataSource(masterDataSource());
-		java.util.Properties additionalProperties = new java.util.Properties();
-		additionalProperties.put("hibernate.dialect", props.getProperty("hibernate.dialect"));
-		factory.setJpaProperties(additionalProperties);
 		factory.afterPropertiesSet();
 
-		return factory.getObject();
+		return factory;
 	}
 }
