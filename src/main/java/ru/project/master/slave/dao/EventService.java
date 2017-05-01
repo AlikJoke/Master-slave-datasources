@@ -26,7 +26,7 @@ public interface EventService {
 	 */
 	@NotNull
 	List<Event> getEvents();
-
+	
 	/**
 	 * Получение события по идентификатору.
 	 * <p>
@@ -37,7 +37,7 @@ public interface EventService {
 	 * @return может быть {@code null}.
 	 */
 	@Null
-	Event getEvent(@NotNull String id);
+	Event getEventById(@NotNull String id);
 
 	/**
 	 * Обновление события.
@@ -67,5 +67,5 @@ public interface EventService {
 	 * @param event
 	 *            - удаляемое событие, не может быть {@code null}.
 	 */
-	void deleteEvent(@NotNull Event event);
+	void delete(@NotNull Event event);
 }

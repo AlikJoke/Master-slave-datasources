@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
@@ -23,8 +24,9 @@ import ru.project.master.slave.properties.Properties;
 import ru.project.master.slave.routing.RoutingDataSource;
 
 @Configuration
-@EnableTransactionManagement
 @ComponentScan
+@EnableJpaRepositories("ru.project.master.slave.dao")
+@EnableTransactionManagement
 public class DataSourcesConfiguration {
 
 	@Autowired
